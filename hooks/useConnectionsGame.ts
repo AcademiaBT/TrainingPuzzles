@@ -153,9 +153,10 @@ export function useConnectionsGame() {
         // ascunde mesajul de feedback după o pauză scurtă
         setTimeout(() => setFeedback(null), 1800);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      const detail = err instanceof Error ? err.message : String(err);
+      const detail = 
+        err?.message || err?.error_description || err?.hint || JSON.stringify(err);
       setErrorMessage(`A apărut o eroare la trimiterea răspunsului: ${detail}`);
     } finally {
       setSubmitting(false);
