@@ -17,8 +17,8 @@ export function Tile({ word, selected, disabled, shakeKey, onClick }: TileProps)
       aria-pressed={selected}
       key={shakeKey && selected ? `shake-${shakeKey}` : undefined}
       className={[
-        'flex aspect-[3/2] w-full select-none items-center justify-center rounded-md p-2 text-center',
-        'font-body text-sm font-semibold uppercase tracking-tight sm:text-base',
+        'flex min-h-[4.75rem] w-full select-none items-center justify-center rounded-md px-2 py-2 text-center sm:min-h-[5.5rem]',
+        'break-words hyphens-auto font-body text-xs font-semibold uppercase leading-tight tracking-tight sm:text-sm',
         'transition-all duration-150 ease-out',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
         selected
