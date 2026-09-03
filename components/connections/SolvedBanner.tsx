@@ -19,7 +19,7 @@ export function SolvedBanner({ category }: { category: SolvedCategory }) {
       <p className="font-headline text-sm font-semibold sm:text-base">
         {category.title}
       </p>
-      <p className="font-body text-[11px] uppercase tracking-tight opacity-80 sm:text-xs">
+      <p className="font-body text-[11px] uppercase tracking-tight opacity-80 break-words sm:text-xs">
         {category.items.join(' · ')}
       </p>
     </div>
