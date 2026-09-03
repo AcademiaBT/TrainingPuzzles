@@ -155,7 +155,7 @@ export function useConnectionsGame() {
       }
     } catch (err: any) {
       console.error(err);
-      const detail = 
+      const detail =
         err?.message || err?.error_description || err?.hint || JSON.stringify(err);
       setErrorMessage(`A apărut o eroare la trimiterea răspunsului: ${detail}`);
     } finally {

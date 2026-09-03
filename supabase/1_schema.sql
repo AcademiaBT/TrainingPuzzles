@@ -240,9 +240,9 @@ begin
   for v_cat in
     select c.* from categories c where c.id = any(v_puzzle.category_ids)
   loop
-    if cardinality(array(select unnest(c.items) intersect select unnest(p_items))) > v_best_match then
-      v_best_match := cardinality(array(select unnest(c.items) intersect select unnest(p_items)));
-      v_matched_cat := c.id;
+    if cardinality(array(select unnest(v_cat.items) intersect select unnest(p_items))) > v_best_match then
+      v_best_match := cardinality(array(select unnest(v_cat.items) intersect select unnest(p_items)));
+      v_matched_cat := v_cat.id;
     end if;
   end loop;
 
