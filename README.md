@@ -147,6 +147,47 @@ npm run dev
 Orice eroare la `submit_guess` apare vizibil, într-un banner mov sub
 titlu, cu mesajul exact al erorii. Trimite textul exact dacă apare.
 
+---
+
+## Interfața de admin
+
+Accesibilă la `/admin/` (dashboard cu lista jocurilor) și
+`/admin/connections/` (import + gestionare categorii pentru Connections).
+
+### Setup (o singură dată)
+
+1. Rulează `supabase/5_admin_setup.sql` în Supabase SQL Editor — creează
+   tabelul `admins`, funcția `is_admin()` și drepturile de scriere pe
+   `categories`/`games`.
+2. Verifică în **Authentication → Providers** că **Email** e activat
+   (pe lângă Anonymous, care rămâne pentru jucători).
+3. Intră pe `/admin/` → "Nu ai cont? Creează unul" → completează
+   email + parolă.
+4. În Supabase → **Authentication → Users**, găsește contul tău nou și
+   copiază **UID**.
+5. Rulează în SQL Editor (înlocuiește cu UID-ul tău):
+   ```sql
+   insert into admins (user_id) values ('UUID-UL-TAU-AICI');
+   ```
+6. Reintră pe `/admin/` cu emailul și parola — ar trebui să vezi
+   dashboard-ul.
+
+### Import de categorii (Excel)
+
+Pe pagina `/admin/connections/`:
+1. Apasă **"Descarcă șablonul"** — un `.xlsx` cu antet corect, un rând de
+   exemplu (evidențiat galben — șterge-l) și o filă de instrucțiuni.
+2. Completează câte un rând per categorie: `tier` (yellow/green/blue/
+   purple), `title`, `item1`-`item4`, `explanation` (opțional).
+3. Încarcă fișierul — vezi un preview cu rândurile valide/invalide
+   înainte de import (nimic nu se salvează până apeși "Importă").
+4. Rândurile cu erori sunt ignorate automat, cu motivul afișat.
+
+### Gestionare categorii existente
+
+Tabel cu toate categoriile jocului, cu comutator activ/inactiv (o
+categorie inactivă nu mai apare în puzzle-urile generate) și ștergere.
+
 ## Next steps sugerate
 
 - Adaugă autentificare reală (email/OAuth) peste sesiunea anonimă, ca
