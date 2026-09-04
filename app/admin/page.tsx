@@ -7,7 +7,7 @@ import { LoginForm } from '@/components/admin/LoginForm';
 import { GameRow } from '@/types/connections';
 
 export default function AdminPage() {
-  const { phase, email, formError, busy, signIn, signUp, signOut, supabase } =
+  const { phase, email, formError, busy, signIn, signOut, supabase } =
     useAdminSession();
   const [games, setGames] = useState<GameRow[]>([]);
 
@@ -34,7 +34,6 @@ export default function AdminPage() {
           formError={formError}
           busy={busy}
           onSignIn={signIn}
-          onSignUp={signUp}
         />
       </main>
     );

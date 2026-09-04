@@ -54,30 +54,10 @@ export function useAdminSession() {
     [supabase]
   );
 
-  const signUp = useCallback(
-    async (emailInput: string, password: string) => {
-      setBusy(true);
-      setFormError(null);
-      const { error } = await supabase.auth.signUp({
-        email: emailInput,
-        password,
-      });
-      setBusy(false);
-      if (error) {
-        setFormError(error.message);
-      } else {
-        setFormError(
-          'Cont creat. Verifică email-ul pentru confirmare (dacă e cerută), apoi cere accesul de admin.'
-        );
-      }
-    },
-    [supabase]
-  );
-
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setPhase('signed_out');
   }, [supabase]);
 
-  return { phase, email, formError, busy, signIn, signUp, signOut, supabase };
+  return { phase, email, formError, busy, signIn, signOut, supabase };
 }

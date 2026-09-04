@@ -21,6 +21,11 @@ const nextConfig = {
   basePath,
   assetPrefix,
   reactStrictMode: true,
+  env: {
+    // expus către client, ca linkurile către fișiere din /public
+    // (ex. șablonul de import) să includă basePath-ul corect
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
 };
 
 export default nextConfig;

@@ -72,12 +72,14 @@ grant select, insert, update on games to authenticated, anon;
 -- ============================================================
 -- BOOTSTRAP — cum îți adaugi primul cont de admin
 -- ============================================================
--- 1. Creează-ți un cont din interfața de admin a aplicației
---    (/admin — formularul are și opțiunea de "Creează cont").
--- 2. Găsește-ți user id-ul: Supabase → Authentication → Users →
---    copiază "UID" de lângă emailul tău.
+-- 1. Supabase → Authentication → Users → Add user → completează
+--    email + parolă, bifează "Auto Confirm User".
+-- 2. Copiază UID-ul contului nou creat.
 -- 3. Rulează (înlocuiește cu UID-ul tău real):
 --
 --    insert into admins (user_id) values ('UUID-UL-TAU-AICI');
 --
--- După asta, poți intra pe /admin cu emailul și parola alese la pasul 1.
+-- După asta, poți intra pe /admin/ cu emailul și parola alese la pasul 1.
+-- Formularul din app NU are opțiune de auto-înregistrare — intenționat,
+-- ca să nu poată oricine să-și creeze cont (chiar dacă, fără rândul din
+-- `admins`, un cont oricum n-ar avea nicio putere de scriere).

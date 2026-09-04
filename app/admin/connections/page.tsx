@@ -9,7 +9,7 @@ import { CategoryTable } from '@/components/admin/CategoryTable';
 import { CategoryRow } from '@/types/connections';
 
 export default function AdminConnectionsPage() {
-  const { phase, email, formError, busy, signIn, signUp, signOut, supabase } =
+  const { phase, email, formError, busy, signIn, signOut, supabase } =
     useAdminSession();
   const [gameId, setGameId] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
@@ -66,7 +66,6 @@ export default function AdminConnectionsPage() {
           formError={formError}
           busy={busy}
           onSignIn={signIn}
-          onSignUp={signUp}
         />
       </main>
     );

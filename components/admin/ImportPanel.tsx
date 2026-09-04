@@ -87,7 +87,7 @@ export function ImportPanel({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-headline text-lg text-paper">Import din Excel</h2>
         <a
-          href="/templates/connections-import-template.xlsx"
+          href={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/templates/connections-import-template.xlsx`}
           download
           className="rounded-full border border-ink-border px-3 py-1.5 font-body text-xs text-paper transition-colors hover:border-paper/40"
         >

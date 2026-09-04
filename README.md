@@ -161,16 +161,16 @@ Accesibilă la `/admin/` (dashboard cu lista jocurilor) și
    `categories`/`games`.
 2. Verifică în **Authentication → Providers** că **Email** e activat
    (pe lângă Anonymous, care rămâne pentru jucători).
-3. Intră pe `/admin/` → "Nu ai cont? Creează unul" → completează
-   email + parolă.
-4. În Supabase → **Authentication → Users**, găsește contul tău nou și
-   copiază **UID**.
+3. Creează-ți contul de admin direct din Supabase (nu din app — formularul
+   de login nu are opțiune de "creează cont", intenționat): **Authentication
+   → Users → Add user**, completează email + parolă, bifează "Auto Confirm
+   User".
+4. Copiază **UID**-ul contului nou creat.
 5. Rulează în SQL Editor (înlocuiește cu UID-ul tău):
    ```sql
    insert into admins (user_id) values ('UUID-UL-TAU-AICI');
    ```
-6. Reintră pe `/admin/` cu emailul și parola — ar trebui să vezi
-   dashboard-ul.
+6. Intră pe `/admin/` cu emailul și parola de la pasul 3.
 
 ### Import de categorii (Excel)
 
