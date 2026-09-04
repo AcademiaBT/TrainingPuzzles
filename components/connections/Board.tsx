@@ -1,6 +1,7 @@
 'use client';
 
 import { useConnectionsGame } from '@/hooks/useConnectionsGame';
+import { TIER_ORDER } from '@/types/connections';
 import { Tile } from './Tile';
 import { SolvedBanner } from './SolvedBanner';
 import { MistakeDots } from './MistakeDots';
@@ -52,6 +53,13 @@ export function Board() {
 
   const isOver = phase === 'won' || phase === 'lost';
 
+  // Sortăm categoriile rezolvate după dificultate (yellow → green → blue →
+  // purple), nu după ordinea în care au fost găsite — ca banner-ele să se
+  // "auto-plaseze" mereu pe rândul corect, de sus în jos.
+  const sortedSolved = [...solved].sort(
+    (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier)
+  );
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
       {errorMessage && (
@@ -76,7 +84,7 @@ export function Board() {
       </div>
 
       <div className="grid grid-cols-4 gap-2">
-        {solved.map((category) => (
+        {sortedSolved.map((category) => (
           <SolvedBanner key={category.title} category={category} />
         ))}
         {items.map(({ item }) => (
