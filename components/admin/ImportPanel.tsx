@@ -117,11 +117,36 @@ export function ImportPanel({
 
       {rows.length > 0 && (
         <>
-          <div className="flex flex-wrap gap-4 font-body text-xs text-paper/70">
-            <span>{validCount} rânduri valide</span>
-            {invalidCount > 0 && (
-              <span className="text-tier-purple">{invalidCount} cu erori (vor fi ignorate)</span>
-            )}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-4 font-body text-xs text-paper/70">
+              <span>{validCount} rânduri valide</span>
+              {invalidCount > 0 && (
+                <span className="text-tier-purple">{invalidCount} cu erori (vor fi ignorate)</span>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRows([]);
+                  setCrossWarnings([]);
+                  setFileName(null);
+                  setParseError(null);
+                }}
+                className="rounded-full border border-ink-border px-5 py-2 font-body text-sm text-paper transition-colors hover:border-paper/40"
+              >
+                Renunță
+              </button>
+              <button
+                type="button"
+                onClick={confirmImport}
+                disabled={validCount === 0 || importing}
+                className="rounded-full bg-accent px-5 py-2 font-body text-sm font-semibold text-ink transition-colors hover:bg-accent-dim disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {importing ? 'Se importă…' : `Importă ${validCount} categorii valide`}
+              </button>
+            </div>
           </div>
 
           {crossWarnings.length > 0 && (
@@ -175,15 +200,6 @@ export function ImportPanel({
               </tbody>
             </table>
           </div>
-
-          <button
-            type="button"
-            onClick={confirmImport}
-            disabled={validCount === 0 || importing}
-            className="self-start rounded-full bg-accent px-5 py-2 font-body text-sm font-semibold text-ink transition-colors hover:bg-accent-dim disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {importing ? 'Se importă…' : `Importă ${validCount} categorii valide`}
-          </button>
         </>
       )}
 
