@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { useConnectionsGame } from '@/hooks/useConnectionsGame';
 import { TIER_ORDER } from '@/types/connections';
 import { Tile } from './Tile';
@@ -53,12 +54,35 @@ export function Board() {
 
   const isOver = phase === 'won' || phase === 'lost';
 
-  // Sortăm categoriile rezolvate după dificultate (yellow → green → blue →
-  // purple), nu după ordinea în care au fost găsite — ca banner-ele să se
-  // "auto-plaseze" mereu pe rândul corect, de sus în jos.
-  const sortedSolved = [...solved].sort(
-    (a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier)
-  );
+  // Construim grid-ul din 4 "sloturi de rând" fixe, în ordinea dificultății
+  // (yellow → green → blue → purple). Un slot deja rezolvat afișează
+  // banner-ul, direct pe poziția lui finală — indiferent de ordinea în care
+  // a fost găsit. Sloturile nerezolvate consumă, pe rând, câte 4 cuvinte
+  // din lista curentă (respectă și amestecarea manuală).
+  const solvedByTier = new Map(solved.map((c) => [c.tier, c]));
+  const gridCells: ReactNode[] = [];
+  let cursor = 0;
+  for (const tier of TIER_ORDER) {
+    const solvedCat = solvedByTier.get(tier);
+    if (solvedCat) {
+      gridCells.push(<SolvedBanner key={`solved-${tier}`} category={solvedCat} />);
+    } else {
+      const rowItems = items.slice(cursor, cursor + 4);
+      cursor += 4;
+      rowItems.forEach(({ item }) => {
+        gridCells.push(
+          <Tile
+            key={item}
+            word={item}
+            selected={selected.includes(item)}
+            disabled={isOver || submitting}
+            shakeKey={feedback === 'wrong' || feedback === 'one_away' ? shakeKey : 0}
+            onClick={() => toggleSelect(item)}
+          />
+        );
+      });
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
@@ -83,21 +107,7 @@ export function Board() {
         {feedback === 'wrong' && 'Grupare greșită.'}
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        {sortedSolved.map((category) => (
-          <SolvedBanner key={category.title} category={category} />
-        ))}
-        {items.map(({ item }) => (
-          <Tile
-            key={item}
-            word={item}
-            selected={selected.includes(item)}
-            disabled={isOver || submitting}
-            shakeKey={feedback === 'wrong' || feedback === 'one_away' ? shakeKey : 0}
-            onClick={() => toggleSelect(item)}
-          />
-        ))}
-      </div>
+      <div className="grid grid-cols-4 gap-2">{gridCells}</div>
 
       {!isOver && (
         <Controls
