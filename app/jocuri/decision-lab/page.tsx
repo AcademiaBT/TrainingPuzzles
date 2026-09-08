@@ -1,9 +1,16 @@
+import Link from 'next/link';
 import { DecisionLabBoard } from '@/components/decision-lab/Board';
 
 export default function DecisionLabPage() {
   return (
     <main className="flex min-h-screen flex-col items-center px-4 py-10 sm:py-16">
       <header className="mb-8 text-center">
+        <Link
+          href="/"
+          className="mb-2 inline-block font-body text-xs text-paper/40 hover:text-paper/70"
+        >
+          ← Înapoi la jocuri
+        </Link>
         <h1 className="font-headline text-3xl font-semibold text-paper sm:text-4xl">
           Decision Lab
         </h1>
