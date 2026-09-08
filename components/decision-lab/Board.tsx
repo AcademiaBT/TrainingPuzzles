@@ -15,6 +15,8 @@ export function DecisionLabBoard() {
     totalScore,
     lastFeedback,
     lastScoreDelta,
+    profile,
+    debrief,
     submitting,
     errorMessage,
     startScenario,
@@ -63,7 +65,12 @@ export function DecisionLabBoard() {
 
   if (phase === 'finished') {
     return (
-      <ResultPanel nodeText={nodeText} totalScore={totalScore} onRestart={restart} />
+      <ResultPanel
+        profile={profile}
+        debrief={debrief}
+        totalScore={totalScore}
+        onRestart={restart}
+      />
     );
   }
 

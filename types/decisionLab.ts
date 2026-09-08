@@ -23,6 +23,8 @@ export interface ChooseDecisionResponse {
   total_score: number;
   node_text: string;
   is_final: boolean;
+  profile: string | null;
+  debrief: string | null;
   choices: DecisionChoiceOption[];
 }
 
@@ -48,6 +50,7 @@ export interface DecisionImportRowRaw {
   next_node_code?: string;
   score?: string;
   feedback?: string;
+  trait?: string;
 }
 
 export interface DecisionImportRowValidated {
@@ -64,4 +67,5 @@ export interface DecisionImportRowValidated {
   nextNodeCode?: string;
   score?: number;
   feedback?: string;
+  trait?: string;
 }

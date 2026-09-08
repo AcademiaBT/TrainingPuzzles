@@ -21,6 +21,8 @@ export function useDecisionLabGame() {
   const [totalScore, setTotalScore] = useState(0);
   const [lastFeedback, setLastFeedback] = useState<string | null>(null);
   const [lastScoreDelta, setLastScoreDelta] = useState(0);
+  const [profile, setProfile] = useState<string | null>(null);
+  const [debrief, setDebrief] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -76,6 +78,8 @@ export function useDecisionLabGame() {
         setChoices(state.choices);
         setTotalScore(state.total_score);
         setLastFeedback(null);
+        setProfile(null);
+        setDebrief(null);
         setPhase('playing');
       } catch (err: any) {
         console.error(err);
@@ -104,6 +108,10 @@ export function useDecisionLabGame() {
         setTotalScore(response.total_score);
         setNodeText(response.node_text);
         setChoices(response.choices);
+        if (response.is_final) {
+          setProfile(response.profile);
+          setDebrief(response.debrief);
+        }
         setPhase(response.is_final ? 'finished' : 'feedback');
       } catch (err: any) {
         console.error(err);
@@ -132,6 +140,8 @@ export function useDecisionLabGame() {
     totalScore,
     lastFeedback,
     lastScoreDelta,
+    profile,
+    debrief,
     submitting,
     errorMessage,
     startScenario,

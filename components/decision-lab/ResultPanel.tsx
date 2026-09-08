@@ -1,9 +1,11 @@
 export function ResultPanel({
-  nodeText,
+  profile,
+  debrief,
   totalScore,
   onRestart,
 }: {
-  nodeText: string;
+  profile: string | null;
+  debrief: string | null;
   totalScore: number;
   onRestart: () => void;
 }) {
@@ -12,9 +14,19 @@ export function ResultPanel({
       <h2 className="font-headline text-2xl font-semibold text-paper">
         Scenariu încheiat
       </h2>
-      <div className="rounded-md border border-ink-border bg-ink-light p-5">
-        <p className="font-body text-sm leading-relaxed text-paper">{nodeText}</p>
-      </div>
+
+      {profile && (
+        <div className="rounded-full bg-accent px-5 py-1.5 font-body text-sm font-semibold text-ink">
+          Profilul tău: {profile}
+        </div>
+      )}
+
+      {debrief && (
+        <div className="rounded-md border border-ink-border bg-ink-light p-5">
+          <p className="font-body text-sm leading-relaxed text-paper">{debrief}</p>
+        </div>
+      )}
+
       <p className="font-body text-sm text-paper/70">
         Scor final: <span className="font-semibold text-paper">{totalScore}</span>
       </p>

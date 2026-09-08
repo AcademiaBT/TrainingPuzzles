@@ -96,6 +96,7 @@ export function DecisionImportPanel({
           next_node_id: codeToId.get(r.nextNodeCode!),
           score: r.score ?? 0,
           feedback: r.feedback ?? null,
+          trait: r.trait ?? null,
         }));
 
         if (choiceInserts.some((c) => !c.node_id || !c.next_node_id)) {

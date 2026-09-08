@@ -101,7 +101,8 @@ supabase/
   4_fix_submit_guess.sql      — fix pentru submit_guess (bug alias SQL)
   5_admin_setup.sql           — tabel admins, is_admin(), drepturi scriere
   6_decision_lab_schema.sql   — tabele, RLS, funcțiile RPC (Decision Lab)
-  7_decision_lab_seed.sql     — cele 5 scenarii MVP
+  7_decision_lab_seed.sql     — istoric, înlocuit de fișierul 8
+  8_decision_lab_debrief.sql  — cele 5 scenarii + trait + profil/debrief
 app/
   layout.tsx                  — fonturi, stiluri globale
   page.tsx                    — landing / hub de jocuri
@@ -227,17 +228,22 @@ multe opțiuni; fiecare alegere are o consecință (feedback) și un scor.
 Structura e un arbore de decizie (nod → opțiuni → nod următor), nu o
 grupare ca la Connections.
 
-### Setup (o singură dată)
+### Setup / migrare
 
+**Instalare nouă** (n-ai rulat niciodată Decision Lab):
 1. Rulează, în ordine, în Supabase SQL Editor:
-   - `supabase/6_decision_lab_schema.sql` — tabele, RLS, funcțiile RPC
-     (`start_decision_session`, `get_current_node`, `choose_decision`) și
-     înregistrarea jocului în `games`.
-   - `supabase/7_decision_lab_seed.sql` — cele 5 scenarii MVP din discuția
-     inițială (Clientul important, E-mailul alarmant, Incidentul
-     misterios, Clientul nemulțumit, Date contradictorii).
+   - `supabase/6_decision_lab_schema.sql` — tabele, RLS, funcțiile RPC.
+   - `supabase/8_decision_lab_debrief.sql` — cele 5 scenarii MVP (cu
+     `trait` pe fiecare opțiune) + funcția `choose_decision` cu profil și
+     debrief. (`7_decision_lab_seed.sql` e păstrat doar ca istoric — nu-l
+     mai rula, e înlocuit de `8_decision_lab_debrief.sql`.)
 2. Jocul e disponibil imediat la `/jocuri/decision-lab/`, iar
    administrarea la `/admin/decision-lab/`.
+
+**Ai rulat deja vechiul seed** (fără profil/debrief)? Rulează direct
+`8_decision_lab_debrief.sql` — el șterge automat scenariile vechi
+(cascadă: și sesiunile de joc deja jucate) și le re-inserează cu
+`trait` pe fiecare opțiune, plus înlocuiește funcția `choose_decision`.
 
 ### Structura scenariilor deja încărcate
 
@@ -251,6 +257,25 @@ alegere. La finalul celor 5 decizii, primești rezultatul și scorul total.
 volumul estimat pentru Sprint 1 în discuția inițială. Poți adânci
 oricând un scenariu suplimentar (mai multe ramuri, nu doar o progresie
 liniară) prin import Excel — formatul suportă asta nativ.
+
+### Debrief-ul final: profil de decizie
+
+La finalul unui scenariu, jucătorul nu vede doar un scor — vede și:
+
+- **Profilul dominant** (Exploratorul / Executorul / Analistul / Diplomatul
+  / Investigatorul), calculat din tendința alegerilor făcute în tot
+  scenariul, nu doar din ultima decizie.
+- **Un paragraf de debrief** care combină profilul cu o observație legată
+  de scorul obținut (ex: *"Ai tendința să iei decizii rapid și orientat
+  spre rezultat. În acest scenariu, ai prioritizat viteza sau presiunea
+  externă, adesea în detrimentul verificării faptelor."*).
+
+Mecanismul: fiecare opțiune are o etichetă comportamentală (`trait`),
+invizibilă jucătorului, stocată în `decision_choices.trait`. La finalul
+scenariului, funcția `choose_decision` numără câte alegeri de fiecare tip
+a făcut jucătorul în acea sesiune și alege profilul dominant. Când
+importi scenarii noi din Excel, coloana `trait` e opțională — dacă o
+lași goală, profilul final poate ieși "Echilibratul" (fallback generic).
 
 ### Import de scenarii (Excel)
 
@@ -269,6 +294,7 @@ Connections, fiindcă modelează un arbore, nu o grupare simplă:
 | `next_node_code` | Către ce `node_code` duce opțiunea (gol dacă `is_final`) |
 | `score` | Punctaj adăugat la alegerea opțiunii |
 | `feedback` | Consecința afișată imediat după alegere |
+| `trait` | Opțional — `exploration`/`execution`/`analysis`/`diplomacy`/`investigation`, folosit pentru profilul final |
 
 Un nod cu mai multe opțiuni = mai multe rânduri cu **același**
 `node_code` (textul nodului se repetă identic pe fiecare). Descarcă

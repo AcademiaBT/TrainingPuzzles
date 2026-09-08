@@ -41,6 +41,11 @@ export function validateDecisionRows(
     const nextNodeCode = normalize(row.next_node_code);
     const scoreRaw = normalize(row.score);
     const feedback = normalize(row.feedback);
+    const traitRaw = normalize(row.trait).toLowerCase();
+    const validTraits = ['exploration', 'execution', 'analysis', 'diplomacy', 'investigation'];
+    if (traitRaw && !validTraits.includes(traitRaw)) {
+      errors.push(`trait invalid: "${row.trait}" (acceptat: ${validTraits.join(', ')}, sau gol)`);
+    }
 
     const isEmptyRow = !scenario && !nodeCode && !nodeText;
     if (isEmptyRow) {
@@ -80,6 +85,7 @@ export function validateDecisionRows(
       nextNodeCode: nextNodeCode || undefined,
       score,
       feedback: feedback || undefined,
+      trait: traitRaw || undefined,
     };
   });
 }
@@ -95,7 +101,6 @@ export function groupByScenario(rows: DecisionImportRowValidated[]) {
       choiceRows: DecisionImportRowValidated[];
     }
   >();
-
   for (const row of rows) {
     if (!row.valid || !row.scenario || !row.nodeCode) continue;
 
