@@ -7,14 +7,22 @@ export default function HomePage() {
         Puzzle Training
       </h1>
       <p className="font-body text-paper/60">
-        O colecție de jocuri de antrenament logic. Primul joc disponibil:
+        O colecție de jocuri de antrenament logic.
       </p>
-      <Link
-        href="/jocuri/connections"
-        className="rounded-full bg-accent px-6 py-3 font-body text-sm font-semibold text-ink transition-colors hover:bg-accent-dim"
-      >
-        Joacă Connections
-      </Link>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Link
+          href="/jocuri/connections"
+          className="rounded-full bg-accent px-6 py-3 font-body text-sm font-semibold text-ink transition-colors hover:bg-accent-dim"
+        >
+          Joacă Connections
+        </Link>
+        <Link
+          href="/jocuri/decision-lab"
+          className="rounded-full border border-ink-border px-6 py-3 font-body text-sm font-semibold text-paper transition-colors hover:border-accent"
+        >
+          Joacă Decision Lab
+        </Link>
+      </div>
     </main>
   );
 }

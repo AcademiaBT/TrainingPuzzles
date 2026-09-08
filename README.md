@@ -95,13 +95,21 @@ direct la Pas 1-4 de mai sus.
 ```
 .github/workflows/deploy.yml — build + deploy automat pe GitHub Pages
 supabase/
-  1_schema.sql                — tabele, RLS, funcțiile RPC
+  1_schema.sql                — tabele, RLS, funcțiile RPC (Connections)
   2_seed_categories.sql       — pool-ul de 36 de categorii
   3_fix_grants.sql            — GRANT-uri explicite de siguranță
+  4_fix_submit_guess.sql      — fix pentru submit_guess (bug alias SQL)
+  5_admin_setup.sql           — tabel admins, is_admin(), drepturi scriere
+  6_decision_lab_schema.sql   — tabele, RLS, funcțiile RPC (Decision Lab)
+  7_decision_lab_seed.sql     — cele 5 scenarii MVP
 app/
   layout.tsx                  — fonturi, stiluri globale
   page.tsx                    — landing / hub de jocuri
-  jocuri/connections/page.tsx — pagina jocului
+  jocuri/connections/page.tsx — pagina jocului Connections
+  jocuri/decision-lab/page.tsx — pagina jocului Decision Lab
+  admin/page.tsx              — dashboard admin (login + listă jocuri)
+  admin/connections/page.tsx  — admin Connections (import + gestionare)
+  admin/decision-lab/page.tsx — admin Decision Lab (import + gestionare)
 components/connections/
   Board.tsx                   — orchestrează grid + banner-e + controale
   Tile.tsx                    — un item din grid
@@ -109,10 +117,32 @@ components/connections/
   MistakeDots.tsx              — indicator 4 puncte pentru greșeli
   Controls.tsx                 — Amestecă / Deselectează / Trimite
   GameOverPanel.tsx            — ecran final (win/loss + reveal)
+components/decision-lab/
+  Board.tsx                   — orchestrează selecția + jocul + rezultatul
+  ScenarioList.tsx             — ecranul de alegere a scenariului
+  DecisionCard.tsx              — situația curentă + opțiunile
+  FeedbackPanel.tsx             — consecința + scorul, după fiecare alegere
+  ResultPanel.tsx                — scorul final
+components/admin/
+  LoginForm.tsx                — login admin (fără auto-înregistrare)
+  ImportPanel.tsx               — import Excel pentru Connections
+  CategoryTable.tsx             — gestionare categorii Connections
+  DecisionImportPanel.tsx       — import Excel pentru Decision Lab
+  DecisionScenarioTable.tsx     — gestionare scenarii Decision Lab
 hooks/
-  useConnectionsGame.ts        — toată logica de joc + apelurile RPC
-lib/supabase/client.ts         — client Supabase pentru browser
-types/connections.ts           — tipuri TypeScript
+  useConnectionsGame.ts        — logica de joc Connections + apelurile RPC
+  useDecisionLabGame.ts         — logica de joc Decision Lab + apelurile RPC
+  useAdminSession.ts            — login/logout + verificare is_admin
+lib/
+  supabase/client.ts           — client Supabase pentru browser
+  importParser.ts               — parser/validator import Excel Connections
+  decisionImportParser.ts       — parser/validator import Excel Decision Lab
+types/
+  connections.ts                — tipuri TypeScript Connections + admin
+  decisionLab.ts                 — tipuri TypeScript Decision Lab
+public/templates/
+  connections-import-template.xlsx
+  decision-lab-import-template.xlsx
 ```
 
 ## Cum funcționează validarea
@@ -187,6 +217,72 @@ Pe pagina `/admin/connections/`:
 
 Tabel cu toate categoriile jocului, cu comutator activ/inactiv (o
 categorie inactivă nu mai apare în puzzle-urile generate) și ștergere.
+
+---
+
+## Al doilea joc: Decision Lab
+
+Simulare decizională: jucătorul primește o situație și alege dintre mai
+multe opțiuni; fiecare alegere are o consecință (feedback) și un scor.
+Structura e un arbore de decizie (nod → opțiuni → nod următor), nu o
+grupare ca la Connections.
+
+### Setup (o singură dată)
+
+1. Rulează, în ordine, în Supabase SQL Editor:
+   - `supabase/6_decision_lab_schema.sql` — tabele, RLS, funcțiile RPC
+     (`start_decision_session`, `get_current_node`, `choose_decision`) și
+     înregistrarea jocului în `games`.
+   - `supabase/7_decision_lab_seed.sql` — cele 5 scenarii MVP din discuția
+     inițială (Clientul important, E-mailul alarmant, Incidentul
+     misterios, Clientul nemulțumit, Date contradictorii).
+2. Jocul e disponibil imediat la `/jocuri/decision-lab/`, iar
+   administrarea la `/admin/decision-lab/`.
+
+### Structura scenariilor deja încărcate
+
+Fiecare din cele 5 scenarii are **5 decizii succesive** (nu doar una):
+situația evoluează după fiecare alegere — apare o complicație nouă, o
+informație suplimentară, o presiune de timp — indiferent de ce ai ales
+la pasul anterior. Doar scorul și feedback-ul diferă în funcție de
+alegere. La finalul celor 5 decizii, primești rezultatul și scorul total.
+
+5 scenarii × 5 noduri × 4 opțiuni = 100 de opțiuni în total — exact
+volumul estimat pentru Sprint 1 în discuția inițială. Poți adânci
+oricând un scenariu suplimentar (mai multe ramuri, nu doar o progresie
+liniară) prin import Excel — formatul suportă asta nativ.
+
+### Import de scenarii (Excel)
+
+Pe pagina `/admin/decision-lab/`, formatul de import diferă de
+Connections, fiindcă modelează un arbore, nu o grupare simplă:
+
+| Coloană | Ce reprezintă |
+|---|---|
+| `scenario` | Titlul scenariului — se repetă pe toate rândurile lui |
+| `scenario_description` | Descriere scurtă (opțional, o dată e suficient) |
+| `node_code` | Cod unic al nodului **în cadrul scenariului** (ex: `start`, `final`) |
+| `node_text` | Textul situației afișat jucătorului |
+| `is_root` | `TRUE` doar pe nodul de start — exact unul per scenariu |
+| `is_final` | `TRUE` dacă nodul e un final (fără opțiuni) |
+| `choice_text` | Textul opțiunii (gol dacă `is_final`) |
+| `next_node_code` | Către ce `node_code` duce opțiunea (gol dacă `is_final`) |
+| `score` | Punctaj adăugat la alegerea opțiunii |
+| `feedback` | Consecința afișată imediat după alegere |
+
+Un nod cu mai multe opțiuni = mai multe rânduri cu **același**
+`node_code` (textul nodului se repetă identic pe fiecare). Descarcă
+șablonul din pagina de admin — conține un scenariu complet, funcțional,
+ca exemplu.
+
+### Securitate
+
+Ca și la Connections: nodurile și opțiunile **nu** sunt expuse public
+prin Data API — jucătorul le vede progresiv, exclusiv prin RPC-urile
+`get_current_node`/`choose_decision`, care nu dezvăluie niciodată scorul
+sau destinația unei opțiuni înainte ca jucătorul să o aleagă. Doar
+titlul și descrierea scenariilor sunt publice (necesare pentru ecranul
+de selecție).
 
 ## Next steps sugerate
 

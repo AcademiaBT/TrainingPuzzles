@@ -81,7 +81,7 @@ export default function AdminPage() {
         {games.map((game) => (
           <Link
             key={game.id}
-            href={game.slug === 'connections' ? '/admin/connections/' : '#'}
+            href={`/admin/${game.slug}/`}
             className="flex items-center justify-between rounded-md border border-ink-border p-4 transition-colors hover:border-accent"
           >
             <div>
