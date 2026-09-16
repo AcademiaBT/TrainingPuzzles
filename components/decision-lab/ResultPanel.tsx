@@ -42,7 +42,12 @@ export function ResultPanel({
       }
       setAiFeedback(data.feedback);
     } catch (err: any) {
-      setAiError(err?.message ?? 'Nu am putut genera feedback-ul AI.');
+      // Logăm eroarea tehnică pentru debugging, dar afișăm learnerului
+      // un mesaj profesionist, fără detalii tehnice (model, cotă, status HTTP).
+      console.error('ai-debrief error:', err);
+      setAiError(
+        'Momentan nu putem genera un feedback personalizat cu AI pe abonamentul curent. Te rugăm să încerci din nou peste câteva minute.'
+      );
     } finally {
       setAiLoading(false);
     }
@@ -76,8 +81,14 @@ export function ResultPanel({
             type="button"
             onClick={requestAiFeedback}
             disabled={aiLoading}
-            className="rounded-full border border-accent px-5 py-2 font-body text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-2 rounded-full border border-accent px-5 py-2 font-body text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
           >
+            {aiLoading && (
+              <span
+                aria-hidden="true"
+                className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent"
+              />
+            )}
             {aiLoading ? 'Se generează…' : '✨ Generează feedback AI personalizat'}
           </button>
         )}

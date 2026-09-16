@@ -10,7 +10,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "jsr:@supabase/server@^1";
 
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
+const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.6-flash";
 
 export default {
   // auth: "user" — jucătorul e autentificat (chiar și anonim, prin
@@ -99,29 +99,48 @@ repeta mecanic textele de consecință de mai sus — sintetizează-le.`;
       const apiKey = Deno.env.get("GEMINI_API_KEY");
       if (!apiKey) throw new Error("GEMINI_API_KEY nu e configurată pe server.");
 
-      const geminiResp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-        }
-      );
+      // Retry cu backoff pentru 503 ("model supraîncărcat") — eroare
+      // temporară, frecventă pe nivelul gratuit în orele de vârf. De obicei
+      // dispare în 1-3 secunde; încercăm de până la 3 ori înainte să renunțăm.
+      const delays = [500, 1500, 3000];
+      let text: string | null = null;
 
-      if (!geminiResp.ok) {
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        const geminiResp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          }
+        );
+
+        if (geminiResp.ok) {
+          const geminiJson = await geminiResp.json();
+          text = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+          break;
+        }
+
         if (geminiResp.status === 429) {
           throw new Error(
             "Serviciul AI e ocupat momentan (limită de utilizare atinsă). Încearcă din nou peste câteva minute."
           );
         }
+
         const errText = await geminiResp.text();
-        console.error("Gemini error:", errText);
-        throw new Error("Serviciul AI a răspuns cu o eroare.");
+        console.error(`Gemini error (attempt ${attempt + 1}):`, errText);
+
+        const isOverloaded = geminiResp.status === 503;
+        if (!isOverloaded || attempt === delays.length) break;
+
+        await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
       }
 
-      const geminiJson = await geminiResp.json();
-      const text = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
-      if (!text) throw new Error("Răspuns gol de la serviciul AI.");
+      if (!text) {
+        throw new Error(
+          "Serviciul AI e temporar supraîncărcat (foarte cerut acum, pe nivelul gratuit). Încearcă din nou în câteva secunde."
+        );
+      }
 
       return Response.json({ feedback: text.trim() });
     } catch (err) {
