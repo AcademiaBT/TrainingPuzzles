@@ -135,6 +135,8 @@ export function useDecisionLabGame() {
   return {
     phase,
     scenarios,
+    sessionId,
+    supabase,
     nodeText,
     choices,
     totalScore,

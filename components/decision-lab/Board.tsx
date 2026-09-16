@@ -10,6 +10,8 @@ export function DecisionLabBoard() {
   const {
     phase,
     scenarios,
+    sessionId,
+    supabase,
     nodeText,
     choices,
     totalScore,
@@ -69,6 +71,8 @@ export function DecisionLabBoard() {
         profile={profile}
         debrief={debrief}
         totalScore={totalScore}
+        sessionId={sessionId}
+        supabase={supabase}
         onRestart={restart}
       />
     );

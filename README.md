@@ -103,6 +103,8 @@ supabase/
   6_decision_lab_schema.sql   — tabele, RLS, funcțiile RPC (Decision Lab)
   7_decision_lab_seed.sql     — istoric, înlocuit de fișierul 8
   8_decision_lab_debrief.sql  — cele 5 scenarii + trait + profil/debrief
+  9_decision_lab_ai_debrief.sql — persistă profil/debrief + pregătește AI
+  functions/ai-debrief/index.ts — Edge Function: feedback AI via Gemini
 app/
   layout.tsx                  — fonturi, stiluri globale
   page.tsx                    — landing / hub de jocuri
@@ -276,6 +278,57 @@ scenariului, funcția `choose_decision` numără câte alegeri de fiecare tip
 a făcut jucătorul în acea sesiune și alege profilul dominant. Când
 importi scenarii noi din Excel, coloana `trait` e opțională — dacă o
 lași goală, profilul final poate ieși "Echilibratul" (fallback generic).
+
+### Feedback AI personalizat (opțional, la cerere)
+
+Pe lângă debrief-ul static de mai sus, jucătorul poate apăsa un buton
+**"✨ Generează feedback AI personalizat"** care trimite parcursul complet
+al deciziilor lui (situații, alegeri, consecințe, scor, profil) către
+Gemini (Google AI), care scrie un paragraf cu adevărat personalizat —
+nu doar combinat din șabloane fixe.
+
+**Important**: nu se apelează niciodată automat — doar la click explicit,
+ca să nu consumăm cota gratuită fără motiv.
+
+**De ce printr-o Edge Function, nu direct din browser**: dacă am apela
+Gemini direct din cod React, cheia API ar fi vizibilă oricui deschide
+devtools-ul, și cererea ar trece prin rețeaua locală a jucătorului
+(posibil blocată de firewall corporate, ca la Vercel). O Supabase Edge
+Function rulează pe serverele Supabase — cheia rămâne ascunsă, iar din
+perspectiva rețelei jucătorului e un apel obișnuit către Supabase,
+exact ca restul jocului.
+
+#### Setup (o singură dată)
+
+1. **Cheie Gemini gratuită**: [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+   → "Create API key" (cont Google, fără card).
+2. **Rulează** `supabase/9_decision_lab_ai_debrief.sql` în SQL Editor —
+   adaugă coloanele `profile`/`debrief` pe `decision_sessions` și
+   actualizează `choose_decision` să le salveze.
+3. **Creează Edge Function-ul**, direct din Dashboard (fără linie de comandă):
+   - Supabase Dashboard → **Edge Functions** → **Deploy a new function**.
+   - Numește-l exact `ai-debrief`.
+   - Dashboard-ul deschide un fișier `index.ts` cu un șablon predefinit
+     (folosește helper-ul `withSupabase`, recomandat oficial de Supabase
+     pentru funcții noi). **Șterge tot conținutul lui** și înlocuiește-l
+     cu conținutul din `supabase/functions/ai-debrief/index.ts` din acest
+     proiect — apasă **Deploy**.
+4. **Adaugă secretul**: Edge Functions → Secrets (sau Project Settings →
+   Edge Functions) → adaugă `GEMINI_API_KEY` cu cheia de la pasul 1.
+   Nu mai trebuie să configurezi nimic legat de URL-uri sau alte chei
+   Supabase — `withSupabase` le gestionează automat.
+5. Gata — testează: termină un scenariu, apasă butonul de feedback AI.
+
+Dacă preferi Supabase CLI (necesită Node.js instalat local) în loc de
+Dashboard, alternativa e `supabase functions deploy ai-debrief` și
+`supabase secrets set GEMINI_API_KEY=...`.
+
+#### Dacă vrei să schimbi modelul Gemini folosit
+
+Implicit se folosește `gemini-2.5-flash` (nivelul gratuit). Poți schimba
+modelul fără să atingi codul — adaugă un secret suplimentar
+`GEMINI_MODEL` cu alt nume de model, dacă Google introduce ceva mai nou
+sau schimbă disponibilitatea nivelului gratuit.
 
 ### Import de scenarii (Excel)
 
